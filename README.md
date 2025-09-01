@@ -7,6 +7,7 @@
 - **📥 自動下載**: 從 Gmail 自動下載附件與郵件內文
 - **🔍 智能篩選**: 支援主旨關鍵字、時間範圍、檔案類型篩選
 - **📁 自動整理**: 依主旨自動建立資料夾並分類檔案
+- **📅 日期分類**: 支援按日期自動創建子資料夾（`all/YYYY-MM-DD/`）
 - **🔐 安全認證**: 自動處理 Gmail API 認證與 token 更新
 - **📊 完整日誌**: 詳細的執行記錄與錯誤追蹤
 
@@ -38,11 +39,11 @@ GMAIL_SUBJECTS=發票,通知,報告
 GMAIL_FILE_TYPES=pdf,xls,xlsx,csv
 GMAIL_DOWNLOAD_CONTENT=true
 
-# 時間範圍（最近30天）
-GMAIL_DATE_RANGE=30d
+# 時間範圍（今天）
+GMAIL_DATE_RANGE=today
 
-# 主旨對應資料夾
-GMAIL_SUBJECT_FOLDER_MAPPING=發票:invoices,報告:reports
+# 主旨對應資料夾（留空表示存入 all 資料夾）
+GMAIL_SUBJECT_FOLDER_MAPPING=
 ```
 
 ### 5. 執行下載
@@ -59,6 +60,7 @@ python gmail_downloader.py
 - 依 `.env` 組態執行
 - 在 `downloads/` 內產出對應主旨資料夾
 - 若啟用 `GMAIL_DOWNLOAD_CONTENT=true`，同時生成 `*_content.txt`
+- 支援按日期自動分類：`all/YYYY-MM-DD/` 格式
 
 ## 🏗️ 專案結構
 
@@ -82,8 +84,10 @@ gmail_parser/
 | `GMAIL_DOWNLOAD_CONTENT` | 是否下載郵件內文 | `true` |
 | `GMAIL_DATE_RANGE` | 搜尋時間範圍 | `30d` |
 | `GMAIL_SUBJECT_FOLDER_MAPPING` | 主旨到資料夾的對應 | 無 |
+| `GMAIL_DATE_RANGE` | 搜尋時間範圍 | `today` |
 
 ### 時間範圍格式
+- 預設選項：`today`（今天）, `yesterday`（昨天）, `week`（週）, `month`（月）, `year`（年）, `all`（全部）
 - 相對範圍：`7d`, `14d`, `30d`（最近 N 天）
 - 絕對日期：`yyyy/mm/dd`（需搭配 `GMAIL_START_DATE` 和 `GMAIL_END_DATE`）
 
