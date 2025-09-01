@@ -1,23 +1,16 @@
-# Gmail 電子發票解析器
+# Gmail 郵件內容下載工具
 
-一個自動化工具，用於從Gmail下載財政部電子發票整合服務平台的附件檔案。
+一個自動化工具，用於從 Gmail 下載附件與郵件內文，支援多種郵件類型的篩選與整理。
 
-## 🚀 功能特色
+## ✨ 主要功能
 
-- **自動化下載**: 自動從Gmail下載電子發票附件
-- **支援多種格式**: 支援PDF、Excel (.xls, .xlsx)、CSV等檔案格式
-- **重複檢查**: 避免重複下載已處理的郵件
-- **日誌記錄**: 完整的執行日誌記錄，支援日誌輪轉
-- **認證管理**: 自動處理Gmail API認證和token更新
+- **📥 自動下載**: 從 Gmail 自動下載附件與郵件內文
+- **🔍 智能篩選**: 支援主旨關鍵字、時間範圍、檔案類型篩選
+- **📁 自動整理**: 依主旨自動建立資料夾並分類檔案
+- **🔐 安全認證**: 自動處理 Gmail API 認證與 token 更新
+- **📊 完整日誌**: 詳細的執行記錄與錯誤追蹤
 
-## 📋 系統需求
-
-- Python 3.7+
-- macOS/Linux/Windows
-- Gmail帳戶
-- 網路連線
-
-## 🛠️ 安裝步驟
+## 🚀 快速開始
 
 ### 1. 克隆專案
 ```bash
@@ -30,100 +23,117 @@ cd gmail_parser
 pip install -r requirements.txt
 ```
 
-### 3. 設定Gmail API認證
+### 3. 設定 Gmail API
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/) 建立專案
+2. 啟用 Gmail API
+3. 建立 OAuth 2.0 用戶端 ID（桌面應用程式）
+4. 下載認證檔，重新命名為 `gmail_cred.json` 放在專案根目錄
 
-#### 3.1 建立Google Cloud專案
-1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
-2. 建立新專案或選擇現有專案
-3. 啟用 Gmail API
+### 4. 建立組態檔
+建立 `.env` 檔案：
+```ini
+# 基本設定
+GMAIL_DOWNLOAD_DIR=./downloads
+GMAIL_SUBJECTS=發票,通知,報告
+GMAIL_FILE_TYPES=pdf,xls,xlsx,csv
+GMAIL_DOWNLOAD_CONTENT=true
 
-#### 3.2 建立認證檔案
-1. 在「API和服務」→「認證」中建立OAuth 2.0用戶端ID
-2. 選擇「桌面應用程式」
-3. 下載JSON認證檔案
-4. 將檔案重新命名為 `gmail_cred.json` 並放在專案根目錄
+# 時間範圍（最近30天）
+GMAIL_DATE_RANGE=30d
 
-## 🔧 使用方法
-
-### 基本使用
-```bash
-python email_downloader.py
+# 主旨對應資料夾
+GMAIL_SUBJECT_FOLDER_MAPPING=發票:invoices,報告:reports
 ```
 
-### 自訂處理數量
-程式會提示輸入要處理的郵件數量，預設為10筆。
+### 5. 執行下載
+```bash
+python gmail_downloader.py
+```
 
-### 下載位置
-- 電子發票附件會下載到 `einvoice/` 目錄
-- 檔案命名格式: `{郵件ID}_{原始檔名}`
+## 📖 使用說明
 
-## 📁 專案結構
+### 下載郵件與附件
+```bash
+python gmail_downloader.py
+```
+- 依 `.env` 組態執行
+- 在 `downloads/` 內產出對應主旨資料夾
+- 若啟用 `GMAIL_DOWNLOAD_CONTENT=true`，同時生成 `*_content.txt`
+
+## 🏗️ 專案結構
 
 ```
 gmail_parser/
-├── email_downloader.py      # 主要程式檔案
-├── requirements.txt          # Python依賴套件
-├── gmail_cred.json          # Gmail API認證檔案 (需自行設定)
-├── token.pickle             # 認證token快取 (自動產生)
-├── einvoice/                # 下載的電子發票檔案目錄
-├── app.log*                 # 應用程式日誌檔案
-├── already_parsed_mails.txt # 已處理郵件記錄
-└── README.md               # 專案說明文件
+├── gmail_downloader.py          # 主要下載工具
+├── requirements.txt             # Python 依賴套件
+├── gmail_cred.json              # Gmail API 認證檔
+├── token.pickle                 # 認證 Token
+├── downloads/                   # 下載輸出目錄
+└── .env                        # 組態檔案
 ```
 
-## 🔐 認證說明
+## ⚙️ 組態選項
 
-- **首次執行**: 會開啟瀏覽器要求授權Gmail存取權限
-- **Token快取**: 認證成功後會儲存到 `token.pickle` 檔案
-- **自動更新**: 當token過期時會自動重新認證
+| 變數 | 說明 | 預設值 |
+|------|------|--------|
+| `GMAIL_DOWNLOAD_DIR` | 下載目標目錄 | `./downloads` |
+| `GMAIL_SUBJECTS` | 郵件主旨關鍵字（逗號分隔） | `發票,通知,報告` |
+| `GMAIL_FILE_TYPES` | 要下載的檔案類型 | `pdf,xls,xlsx,csv` |
+| `GMAIL_DOWNLOAD_CONTENT` | 是否下載郵件內文 | `true` |
+| `GMAIL_DATE_RANGE` | 搜尋時間範圍 | `30d` |
+| `GMAIL_SUBJECT_FOLDER_MAPPING` | 主旨到資料夾的對應 | 無 |
 
-## 📊 支援的檔案格式
+### 時間範圍格式
+- 相對範圍：`7d`, `14d`, `30d`（最近 N 天）
+- 絕對日期：`yyyy/mm/dd`（需搭配 `GMAIL_START_DATE` 和 `GMAIL_END_DATE`）
 
-- PDF (.pdf)
-- Excel (.xls, .xlsx)
-- CSV (.csv)
+## 🔐 認證流程
+
+1. **首次執行**: 開啟瀏覽器授權 Gmail 存取權限
+2. **Token 快取**: 認證成功後儲存於 `token.pickle`
+3. **自動更新**: Token 過期時自動重新認證
 
 ## 📝 日誌記錄
 
-- 日誌檔案: `app.log`
-- 日誌輪轉: 每日自動備份，最多保留30天
-- 記錄內容: 執行過程、錯誤訊息、下載狀態
+- 日誌檔案：`app.log`
+- 記錄內容：執行過程、錯誤訊息、下載狀態
+- 支援日誌輪替（按日期分割）
 
 ## ⚠️ 注意事項
 
-1. **認證檔案**: `gmail_cred.json` 包含敏感資訊，請勿上傳到公開儲存庫
-2. **API配額**: Gmail API有使用配額限制，請注意使用頻率
-3. **檔案大小**: 大量附件下載可能耗時較長
-4. **網路連線**: 需要穩定的網路連線
+- `gmail_cred.json` 與 `token.pickle` 為敏感資訊，請勿上傳至 Git
+- `downloads/` 目錄已加入 `.gitignore`，不會被版本控制
+- 建議使用 `.env` 檔案管理組態，避免將私密資訊寫入程式碼
 
-## 🐛 故障排除
+## 🐛 常見問題
 
-### 常見問題
+### 認證錯誤
+- 確認 `gmail_cred.json` 存在且格式正確
+- 確認已啟用 Gmail API
+- 檢查網路連線狀態
 
-1. **認證錯誤**
-   - 檢查 `gmail_cred.json` 檔案是否存在且格式正確
-   - 確認Gmail API已啟用
+### 沒有下載到檔案
+- 檢查主旨關鍵字是否正確
+- 確認時間範圍設定
+- 檢查附件副檔名是否在 `GMAIL_FILE_TYPES` 中
 
-2. **權限錯誤**
-   - 確認程式有寫入當前目錄的權限
-   - 檢查磁碟空間是否充足
+### 權限錯誤
+- 確認目錄可寫入
+- 檢查磁碟空間是否充足
+- 確認檔案權限設定
 
-3. **網路連線問題**
-   - 檢查網路連線狀態
-   - 確認防火牆設定
+## 🤝 貢獻指南
+
+歡迎提交 Issue 或 Pull Request 來改善專案！
 
 ## 📄 授權
 
-本專案僅供個人使用，請遵守相關服務條款和隱私政策。
-
-## 🤝 貢獻
-
-歡迎提交Issue和Pull Request來改善這個專案。
+本專案僅供個人使用，請遵守相關服務條款與隱私政策。
 
 ## 📞 支援
 
-如有問題或建議，請在GitHub上建立Issue。
+如有問題或建議，請在 GitHub 上建立 Issue。
 
 ---
 
-**注意**: 使用本工具時請遵守Gmail的使用條款和相關法規。
+**重要提醒**: 請妥善保護你的憑證與組態檔，不要將任何私密資訊提交到版本控制系統。
