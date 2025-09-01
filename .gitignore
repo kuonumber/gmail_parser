@@ -1,11 +1,15 @@
 # 認證和敏感資訊
 gmail_cred.json
 token.pickle
+token.pickle.backup
+mp_gmail.json
 
 # 資料檔案
 einvoice/
+downloads/
 *.csv
 already_parsed_mails.txt
+already_parsed_mails_backup.txt
 bad_file.txt
 
 # 日誌檔案
@@ -47,9 +51,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+config*.env
 
 # 其他
 *.xls
 *.xlsx
 .pylintrc
+auto_test/
 
